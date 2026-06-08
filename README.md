@@ -33,7 +33,7 @@ CryptoSTUDS/
 
 ---
 
-## Cómo ponerlo en marcha
+## Cómo ponerlo en marcha localmente
 
 ### 1. Instalar dependencias
 
@@ -41,15 +41,15 @@ CryptoSTUDS/
 pip install -r requirements.txt
 ```
 
-### 2. Levantar un nodo
+### 2. Levantar un nodo de manera local
 
-```bash
+```
 python api/node_app.py --port 5000
 ```
 
 ### 3. Abrir la interfaz
 
-Abre `docs/index.html` en el navegador y, en el campo *NODO*, conecta a `http://localhost:5000`.
+Abre `docs/index.htm` en el navegador y, en el campo *NODO*, conecta a `http://localhost:5000`.
 
 ### 4. (Opcional) Demostración automática
 
@@ -69,6 +69,15 @@ automática.
 - **Nodo:** se despliega en **Render** como Web Service. El archivo `render.yaml` ya trae la
   configuración; solo se conecta el repositorio y se elige el plan gratuito. Render entrega una
   URL pública que se pega en el campo *NODO* de la web.
+
+ ### Web: 
+ ```
+ https://cybercarlitos2005.github.io/CryptoSTUDS/
+```
+ ### Nodo render: 
+ ```
+ https://cryptostuds.onrender.com 
+```
 
 ---
 
