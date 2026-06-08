@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoStuds — Wallet & Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+  <style>
+
+    :root {
+      --gold:    #ffe81f;
+      --gold2:   #ffa500;
+      --blue:    #004aad;
+      --blue2:   #1a7fff;
+      --purple:  #7f02d6;
+      --green:   #39ff6e;
+      --red:     #ff3333;
+      --gray:    #8d8985;
+      --text:    #e8eaf0;
+      --dim:     #8899aa;
+      --bg:      #05070d;
+      --panel:   rgba(10,13,22,0.88);
+      --border:  #1a2440;
+      --font:    'Exo 2', sans-serif;
+      --font-hd: 'Black Han Sans', sans-serif;
+      --glow-y:  0 0 12px #ffe81f99, 0 0 30px #ffe81f44;
+      --glow-b:  0 0 12px #004aad99, 0 0 30px #004aad44;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-weight: 600;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 20% 10%,  rgba(0,74,173,0.22) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 90%,  rgba(127,2,214,0.18) 0%, transparent 55%),
+        url('Fondo_general.jpg');
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+      overflow-x: hidden;
+    }
+
+    body::after {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px
+      );
+    }
+
+    #campoEstrellasAnim {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .hiperespacio {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none; opacity: 0;
+      background:
+        repeating-conic-gradient(from 0deg at 50% 50%,
+          transparent 0deg, rgba(255,232,31,0.0) 2deg,
+          rgba(26,127,255,0.5) 2.5deg, transparent 3deg);
+      transform: scale(0.2);
+      mix-blend-mode: screen;
+    }
+    .hiperespacio.jump {
+      animation: saltoHiperespacio 0.7s ease-out;
+    }
+    @keyframes saltoHiperespacio {
+      0%   { opacity: 0; transform: scale(0.2); }
+      30%  { opacity: 0.9; }
+      100% { opacity: 0; transform: scale(2.6); }
+    }
+
+    .vignette {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+    }
+
+    main {
+      position: relative; z-index: 1;
+      padding: 0 16px 80px;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .grid > .card, .chain-card, .node-bar {
+      animation: menuIn 0.55s cubic-bezier(.2,.9,.25,1) backwards;
+    }
+    .node-bar           { animation-delay: 0.05s; }
+    .grid:nth-of-type(1) > .card:nth-child(1) { animation-delay: 0.15s; }
+    .grid:nth-of-type(1) > .card:nth-child(2) { animation-delay: 0.25s; }
+    .chain-card         { animation-delay: 0.35s; }
+    .grid:nth-of-type(2) > .card:nth-child(1) { animation-delay: 0.45s; }
+    .grid:nth-of-type(2) > .card:nth-child(2) { animation-delay: 0.55s; }
+    @keyframes menuIn {
+      from { opacity: 0; transform: translateY(22px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .grid > .card, .chain-card, .node-bar { animation: none; }
+      #campoEstrellasAnim, .hiperespacio { display: none; }
+    }
+
+    header {
+      text-align: center;
+      padding: 28px 12px 22px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .header-studs {
+      display: flex; justify-content: center; gap: 10px; margin-bottom: 14px;
+    }
+    .stud {
+      width: 34px; height: 34px; object-fit: contain;
+      animation: studBounce 1.8s ease-in-out infinite;
+    }
+    .stud:nth-child(2) { animation-delay:.25s }
+    .stud:nth-child(3) { animation-delay:.5s  }
+    .stud:nth-child(4) { animation-delay:.75s }
+    .stud:nth-child(5) { animation-delay:1s   }
+    @keyframes studBounce {
+      0%,100% { transform: translateY(0) scale(1); }
+      45%     { transform: translateY(-7px) scale(1.08); }
+      60%     { transform: translateY(-5px) scale(1.05); }
+    }
+
+    .logo-img {
+      height: 80px;
+      max-width: 92%;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 8px;
+      filter: drop-shadow(0 0 18px rgba(255,232,31,0.55));
+      animation: logoGlow 3s ease-in-out infinite alternate;
+    }
+    @keyframes logoGlow {
+      from { filter: drop-shadow(0 0 12px rgba(255,232,31,0.4)); }
+      to   { filter: drop-shadow(0 0 28px rgba(255,232,31,0.8)); }
+    }
+
+    .header-sub {
+      font-family: var(--font-hd);
+      font-size: 0.65em;
+      color: var(--blue2);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+    header p {
+      color: var(--dim);
+      font-size: 0.72em;
+      margin-top: 5px;
+      letter-spacing: 2px;
+      font-weight: 400;
+    }
+
+    .press-start {
+      margin-top: 14px;
+      font-family: var(--font-hd);
+      font-size: 0.66em;
+      letter-spacing: 3px;
+      color: var(--gold);
+      text-shadow: var(--glow-y);
+      animation: pressBlink 1.1s step-end infinite;
+    }
+    @keyframes pressBlink { 0%,100%{opacity:1} 50%{opacity:0.15} }
+    .logo-img:hover {
+      animation: logoGlow 3s ease-in-out infinite alternate, logoWobble 0.5s ease-in-out;
+    }
+    @keyframes logoWobble {
+      0%,100%{ transform: rotate(0) scale(1); }
+      30%    { transform: rotate(-2deg) scale(1.04); }
+      60%    { transform: rotate(2deg)  scale(1.04); }
+    }
+
+    .lego-divider {
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold2), var(--gold), transparent);
+      border-radius: 2px;
+      margin: 18px 0;
+      box-shadow: var(--glow-y);
+    }
+
+    .node-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      background: var(--panel);
+      border: 1px solid var(--blue);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 22px;
+      backdrop-filter: blur(8px);
+    }
+    .node-bar label {
+      color: var(--gold);
+      font-family: var(--font-hd);
+      font-size: 0.72em;
+      letter-spacing: 2px;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+    .node-bar input {
+      background: #07090f;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 10px;
+      border-radius: 4px;
+      font-family: var(--font);
+      font-weight: 600;
+      flex: 1; min-width: 140px; max-width: 280px;
+      font-size: 0.88em;
+    }
+    .node-status { font-size: 0.78em; white-space: nowrap; font-weight: 700; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+    .dot.on  { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .dot.off { background: var(--red); }
+    .node-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .lego-btn {
+      display: inline-block;
+      background: #0a0c14;
+      border: 2.5px solid var(--gold);
+      color: var(--gold);
+      padding: 9px 18px;
+      border-radius: 5px;
+      font-family: var(--font-hd);
+      font-size: 0.72em;
+      letter-spacing: 2px;
+      cursor: pointer;
+      text-transform: uppercase;
+      position: relative;
+      transition: background 0.15s, box-shadow 0.15s, color 0.15s;
+      margin-top: 8px;
+      min-height: 40px;
+      touch-action: manipulation;
+      white-space: nowrap;
+    }
+
+    .lego-btn::before {
+      content: '►';
+      position: absolute;
+      left: -20px;
+      top: 50%; transform: translateY(-50%);
+      color: var(--gold);
+      font-size: 0.85em;
+      opacity: 0;
+      animation: none;
+    }
+    .lego-btn:hover::before,
+    .lego-btn:focus::before,
+    .lego-btn.active::before {
+      opacity: 1;
+      animation: legoArrowBlink 0.55s step-end infinite;
+    }
+    @keyframes legoArrowBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .lego-btn:hover, .lego-btn:focus, .lego-btn.active {
+      background: rgba(255,232,31,0.12);
+      box-shadow: var(--glow-y), inset 0 0 14px rgba(255,232,31,0.08);
+      outline: none;
+      animation: legoBtnBlink 0.5s step-end 3;
+    }
+    @keyframes legoBtnBlink {
+      0%,100% { border-color: var(--gold); color: var(--gold); }
+      50%     { border-color: #fff;         color: #fff; }
+    }
+
+    .lego-btn.blue {
+      border-color: var(--blue2); color: var(--blue2);
+    }
+    .lego-btn.blue::before { color: var(--blue2); }
+    .lego-btn.blue:hover, .lego-btn.blue.active {
+      background: rgba(26,127,255,0.12);
+      box-shadow: var(--glow-b), inset 0 0 14px rgba(0,74,173,0.1);
+      border-color: var(--blue2); color: var(--blue2);
+    }
+    .lego-btn.green  { border-color: var(--green); color: var(--green); }
+    .lego-btn.green::before { color: var(--green); }
+    .lego-btn.green:hover  {
+      background: rgba(57,255,110,0.1);
+      box-shadow: 0 0 12px #39ff6e88; color: var(--green);
+    }
+    .lego-btn.purple { border-color: var(--purple); color: #c060ff; }
+    .lego-btn.purple::before { color: #c060ff; }
+    .lego-btn.purple:hover { background: rgba(127,2,214,0.15); box-shadow: 0 0 12px #7f02d688; }
+
+    .lego-btn.sm { padding: 6px 12px; font-size: 0.65em; min-height: 34px; margin-top: 0; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 16px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--gold2), var(--gold), var(--blue2));
+    }
+
+    .card::after {
+      content: '';
+      position: absolute; top: 0; left: -60%;
+      width: 50%; height: 100%;
+      background: linear-gradient(100deg, transparent, rgba(255,232,31,0.12), transparent);
+      transform: skewX(-18deg);
+      transition: left 0.5s ease;
+      pointer-events: none;
+    }
+    .card:hover {
+      border-color: rgba(255,232,31,0.35);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 26px rgba(0,0,0,0.45), 0 0 18px rgba(255,232,31,0.08);
+    }
+    .card:hover::after { left: 130%; }
+
+    .card-title {
+      font-family: var(--font-hd);
+      color: var(--gold);
+      font-size: 0.8em;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,232,31,0.15);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-title .icon { font-size: 1.2em; }
+
+    .wallet-display {
+      background: #040509;
+      border: 1.5px solid var(--blue);
+      border-radius: 4px;
+      padding: 9px 11px;
+      font-size: 0.64em;
+      word-break: break-all;
+      color: var(--blue2);
+      margin-bottom: 10px;
+      min-height: 38px;
+      font-family: 'Courier New', monospace;
+      box-shadow: inset 0 0 12px rgba(0,74,173,0.12);
+      letter-spacing: 0.5px;
+    }
+
+    .balance-display {
+      font-family: var(--font-hd);
+      font-size: 2em;
+      color: var(--gold);
+      text-shadow: var(--glow-y);
+      text-align: center;
+      padding: 10px 0;
+      letter-spacing: 2px;
+      position: relative;
+    }
+
+    .balance-display::before {
+      content: '';
+      display: inline-block;
+      width: 22px; height: 22px;
+      background: url('Stud_dorado.gif') center/contain no-repeat;
+      vertical-align: middle;
+      margin-right: 6px;
+      animation: studBounce 2s ease-in-out infinite;
+    }
+    .balance-display small {
+      font-size: 0.28em; color: var(--gold2); display: block;
+      letter-spacing: 4px; text-shadow: none; margin-top: 2px;
+    }
+
+    label.field-label {
+      display: block;
+      color: var(--gold2);
+      font-size: 0.68em;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+      margin-top: 12px;
+      font-family: var(--font-hd);
+      text-transform: uppercase;
+    }
+    input.field {
+      width: 100%;
+      background: #07090f;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      padding: 9px 11px;
+      border-radius: 4px;
+      font-family: var(--font);
+      font-weight: 700;
+      font-size: 0.9em;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      min-height: 40px;
+    }
+    input.field:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(255,232,31,0.15);
+    }
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .chain-card {
+      background: var(--panel);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 16px;
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+    }
+    .chain-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--blue2), var(--purple), var(--gold));
+      background-size: 200%;
+      animation: shimmer 3s linear infinite;
+    }
+    @keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+
+    .chain-header {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,232,31,0.15);
+    }
+    .chain-title {
+      font-family: var(--font-hd);
+      color: var(--gold);
+      font-size: 0.8em;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+    .chain-length {
+      font-family: var(--font-hd);
+      color: var(--green);
+      font-size: 1.3em;
+      text-shadow: 0 0 10px rgba(57,255,110,0.5);
+    }
+
+    .blocks-list {
+      display: flex; flex-direction: column; gap: 8px;
+      max-height: 260px; overflow-y: auto;
+    }
+    .block-item {
+      background: #040509;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--blue2);
+      border-radius: 4px;
+      padding: 9px 13px;
+      font-size: 0.67em;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      font-family: 'Courier New', monospace;
+    }
+    .block-item:hover {
+      border-left-color: var(--gold);
+      background: #0a0c15;
+      box-shadow: inset 4px 0 12px rgba(255,232,31,0.06);
+    }
+    .block-item .block-idx  { color: var(--gold); font-family: var(--font-hd); font-size: 0.95em; margin-bottom: 3px; letter-spacing: 1px; }
+    .block-item .block-hash { color: var(--blue2); word-break: break-all; }
+    .block-item .block-meta { color: var(--dim); margin-top: 3px; }
+    .block-item .block-txs  { color: var(--green); margin-top: 3px; }
+    .block-item.new { animation: blockDrop 0.5s cubic-bezier(.2,.9,.25,1); }
+    @keyframes blockDrop {
+      0%   { opacity: 0; transform: translateY(-14px) scale(0.96); box-shadow: 0 0 0 2px var(--gold); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .chain-length.pulse { animation: lenPulse 0.45s ease; }
+    @keyframes lenPulse {
+      0%,100% { transform: scale(1);   text-shadow: 0 0 10px rgba(57,255,110,0.5); }
+      50%     { transform: scale(1.25);text-shadow: 0 0 18px rgba(57,255,110,0.9); }
+    }
+
+    .registrar {
+      background: #03040a;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 10px;
+      font-size: 0.65em;
+      max-height: 100px;
+      overflow-y: auto;
+      color: var(--dim);
+      margin-top: 10px;
+      font-family: 'Courier New', monospace;
+      line-height: 1.5;
+    }
+    .registrar .registrar-ok   { color: var(--green); }
+    .registrar .registrar-err  { color: var(--red); }
+    .registrar .registrar-info { color: var(--blue2); }
+
+    .aviso {
+      position: fixed;
+      bottom: 18px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #0a0c14;
+      border: 2.5px solid var(--gold);
+      color: var(--gold);
+      padding: 11px 24px;
+      border-radius: 6px;
+      font-family: var(--font-hd);
+      font-size: 0.75em;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+      z-index: 300;
+      box-shadow: var(--glow-y);
+      white-space: nowrap;
+    }
+    .aviso.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .aviso.error {
+      border-color: var(--red); color: var(--red);
+      box-shadow: 0 0 16px #ff333388;
+    }
+
+    .footer-studs {
+      display: flex; justify-content: center; gap: 10px;
+      margin-top: 40px; padding-top: 18px;
+      border-top: 2px solid rgba(255,232,31,0.2);
+    }
+    .footer-stud {
+      width: 28px; height: 28px; object-fit: contain;
+      animation: studBounce 2s ease-in-out infinite;
+    }
+    .footer-stud:nth-child(2) { animation-delay:.2s }
+    .footer-stud:nth-child(3) { animation-delay:.4s }
+    .footer-stud:nth-child(4) { animation-delay:.6s }
+    .footer-stud:nth-child(5) { animation-delay:.8s }
+
+    .credits {
+      text-align: center; margin-top: 10px;
+      font-family: var(--font-hd);
+      font-size: 0.62em;
+      color: var(--gray); letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+    .credits span { color: var(--gold); margin: 0 8px; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--gold2); border-radius: 2px; opacity: 0.5; }
+
+    #validezCadena {
+      font-size: 0.72em;
+      margin-bottom: 10px;
+      display: none;
+      font-family: var(--font-hd);
+      letter-spacing: 1px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.3);
+    }
+
+    @media (max-width: 768px) {
+      main { padding: 0 12px 80px; }
+      .node-bar { flex-direction: column; align-items: stretch; }
+      .node-bar input { max-width: 100%; }
+      .node-status { text-align: center; }
+      .node-buttons { justify-content: center; }
+    }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; gap: 14px; }
+      .logo-img { height: 62px; }
+      .stud { width: 28px; height: 28px; }
+      header { padding: 18px 8px 14px; }
+      .header-sub { font-size: 0.5em; letter-spacing: 2px; }
+      .lego-btn { width: 100%; text-align: center; }
+      .btn-row .lego-btn { flex: 1; }
+      .balance-display { font-size: 1.6em; }
+      .blocks-list { max-height: 200px; }
+      .card { padding: 14px 12px; }
+      .chain-card { padding: 14px 12px; }
+      .aviso { font-size: 0.65em; white-space: normal; text-align: center; width: 88vw; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="campoEstrellasAnim"></canvas>
+<div class="hiperespacio" id="hiperespacio"></div>
+<div class="vignette"></div>
+
+<main>
+
+<header>
+  <div class="header-studs">
+    <img class="stud" src="Stud_azul.gif"   alt="">
+    <img class="stud" src="Stud_dorado.gif" alt="">
+    <img class="stud" src="Stud_morado.gif" alt="">
+    <img class="stud" src="Stud_gris.gif"   alt="">
+    <img class="stud" src="Stud_dorado.gif" alt="">
+  </div>
+  <img class="logo-img" src="Logo_Crypto_STUDS.png" alt="CryptoStuds Logo">
+  <div class="header-sub">Standard Token for Universal Digital-Bricks</div>
+  <div class="press-start" id="textoMenu">▸ SELECCIONA UNA OPCIÓN DEL MENÚ ◂</div>
+</header>
+
+<div class="lego-divider"></div>
+
+<div class="node-bar">
+  <label>⬡ NODO:</label>
+  <input id="urlNodo" value="http://localhost:5000" oninput="revisarNodo()" placeholder="http://tu-ip:5000">
+  <span class="node-status" id="estadoNodo">
+    <span class="dot off" id="puntoNodo"></span><span id="etiquetaNodo">desconectado</span>
+  </span>
+  <div class="node-buttons">
+    <button class="lego-btn sm" onclick="revisarNodo()">Conectar</button>
+    <button class="lego-btn sm blue" onclick="actualizarCadena()">↻ Cadena</button>
+  </div>
+</div>
+
+<div class="grid">
+
+  <div class="card">
+    <div class="card-title"><span class="icon">◈</span> Mi Wallet</div>
+    <label class="field-label">Dirección activa</label>
+    <div class="wallet-display" id="miDireccion">— sin wallet —</div>
+    <div class="balance-display" id="miSaldo">0 <small>CRYPTOSTUDS</small></div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="lego-btn" onclick="activarBoton(this, nuevaWallet)">+ Nueva Wallet</button>
+      <button class="lego-btn blue" onclick="activarBoton(this, actualizarSaldo)">↻ Saldo</button>
+    </div>
+    <div class="registrar" id="registroWallet"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">▲</span> Enviar Transacción</div>
+    <label class="field-label">Desde (tu dirección)</label>
+    <input class="field" id="txOrigen" placeholder="Pega tu dirección..." readonly>
+    <label class="field-label">Para (dirección destino)</label>
+    <input class="field" id="txDestino" placeholder="Dirección del receptor">
+    <label class="field-label">Monto (CryptoStuds)</label>
+    <input class="field" id="montoTx" type="number" placeholder="ej. 100" inputmode="decimal">
+    <div class="btn-row">
+      <button class="lego-btn green" onclick="activarBoton(this, enviarTx)">Enviar →</button>
+      <button class="lego-btn" onclick="activarBoton(this, minarPendientes)">⛏ Minar</button>
+    </div>
+    <div class="registrar" id="registroTx"></div>
+  </div>
+
+</div>
+
+<div class="chain-card">
+  <div class="chain-header">
+    <span class="chain-title">⛓ Blockchain Explorer</span>
+    <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="lego-btn purple sm" onclick="activarBoton(this, verificarCadena)" style="margin-top:0">✓ Verificar</button>
+      <span class="chain-length" id="longitudCadena">0 bloques</span>
+    </span>
+  </div>
+  <div id="validezCadena"></div>
+  <div class="blocks-list" id="listaBloques">
+    <div style="color:var(--dim);font-size:0.8em;text-align:center;padding:24px;font-family:var(--font-hd);letter-spacing:2px;">
+      CONECTA UN NODO PARA VER LA CADENA
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-title"><span class="icon">⬡</span> Red P2P</div>
+    <label class="field-label">Registrar peer</label>
+    <input class="field" id="urlPeer" placeholder="http://localhost:5001">
+    <div class="btn-row">
+      <button class="lego-btn" onclick="activarBoton(this, registrarPeer)">+ Peer</button>
+      <button class="lego-btn blue" onclick="activarBoton(this, resolverConsenso)">↻ Consenso</button>
+    </div>
+    <div class="registrar" id="registroRed"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">◆</span> Consultar Saldo</div>
+    <label class="field-label">Dirección a consultar</label>
+    <input class="field" id="direccionConsulta" placeholder="Pega cualquier dirección">
+    <button class="lego-btn blue" onclick="activarBoton(this, consultarSaldo)">Consultar</button>
+    <div style="margin-top:12px;" id="resultadoConsulta"></div>
+    <div class="registrar" id="registroConsulta"></div>
+  </div>
+</div>
+
+<div class="lego-divider"></div>
+
+<div class="footer-studs">
+  <img class="footer-stud" src="Stud_gris.gif"   alt="">
+  <img class="footer-stud" src="Stud_dorado.gif" alt="">
+  <img class="footer-stud" src="Stud_azul.gif"   alt="">
+  <img class="footer-stud" src="Stud_morado.gif" alt="">
+  <img class="footer-stud" src="Stud_gris.gif"   alt="">
+</div>
+<div class="credits">
+  <span>Carlitos</span>·<span>Emilio</span>·<span>Carlos</span>·<span>Gael</span>
+</div>
+
+</main>
+
+<div class="aviso" id="aviso"></div>
+
+<script>
+const URL_NODO = () => document.getElementById('urlNodo').value.replace(/\/$/, '');
+let miDir = null;
+
+let audioCtx = null;
+function sonido(freq = 660, dur = 0.07, type = 'square', vol = 0.04) {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + dur);
+  } catch (e) {  }
+}
+
+function saltoHiperespacio() {
+  const h = document.getElementById('hiperespacio');
+  h.classList.remove('jump');
+  void h.offsetWidth;
+  h.classList.add('jump');
+}
+
+function activarBoton(btn, fn) {
+  btn.classList.add('active');
+  sonido(720, 0.06, 'square', 0.05);
+  sonido(960, 0.05, 'square', 0.03);
+  saltoHiperespacio();
+  setTimeout(() => btn.classList.remove('active'), 900);
+  fn();
+}
+
+document.addEventListener('mouseover', (e) => {
+  if (e.target.closest('.lego-btn')) sonido(420, 0.03, 'sine', 0.02);
+});
+
+function aviso(msg, isError = false) {
+  const t = document.getElementById('aviso');
+  t.textContent = msg;
+  t.className = 'aviso show' + (isError ? ' error' : '');
+  setTimeout(() => t.className = 'aviso', 2800);
+}
+
+function registrar(id, msg, type = 'info') {
+  const el   = document.getElementById(id);
+  const line = document.createElement('div');
+  line.className   = `registrar-${type}`;
+  line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.prepend(line);
+}
+
+async function revisarNodo() {
+  const dot   = document.getElementById('puntoNodo');
+  const label = document.getElementById('etiquetaNodo');
+  try {
+    const r = await fetch(`${URL_NODO()}/chain`);
+    const d = await r.json();
+    dot.className     = 'dot on';
+    label.textContent = `conectado — ${d.length} bloques`;
+    actualizarCadena();
+  } catch {
+    dot.className     = 'dot off';
+    label.textContent = 'desconectado';
+  }
+}
+
+async function nuevaWallet() {
+  try {
+    const r = await fetch(`${URL_NODO()}/wallet/new`);
+    const d = await r.json();
+    miDir = d.address;
+    document.getElementById('miDireccion').textContent = miDir;
+    document.getElementById('txOrigen').value = miDir;
+    await actualizarSaldo();
+    registrar('registroWallet', `Wallet creada: ${miDir.slice(0,16)}...`, 'ok');
+    aviso('✓ Wallet creada');
+  } catch(e) {
+    registrar('registroWallet', `Error: ${e}`, 'err');
+    aviso('Error creando wallet', true);
+  }
+}
+
+async function actualizarSaldo() {
+  if (!miDir) return;
+  try {
+    const r = await fetch(`${URL_NODO()}/balance/${miDir}`);
+    const d = await r.json();
+    document.getElementById('miSaldo').innerHTML =
+      `${d.balance} <small>CRYPTOSTUDS</small>`;
+    registrar('registroWallet', `Saldo: ${d.balance} CryptoStuds`, 'info');
+  } catch(e) {
+    registrar('registroWallet', `Error: ${e}`, 'err');
+  }
+}
+
+async function enviarTx() {
+  const origen  = document.getElementById('txOrigen').value.trim();
+  const destino = document.getElementById('txDestino').value.trim();
+  const monto   = parseFloat(document.getElementById('montoTx').value);
+  if (!origen || !destino || !monto) { aviso('Completa todos los campos', true); return; }
+  try {
+    const r = await fetch(`${URL_NODO()}/transaction/new`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({from: origen, to: destino, amount: monto}),
+    });
+    const d = await r.json();
+    registrar('registroTx', `TX enviada -> pendientes: ${d.pending}`, 'ok');
+    aviso(`TX enviada — ${monto} STUDS`);
+  } catch(e) {
+    registrar('registroTx', `Error: ${e}`, 'err');
+    aviso('Error enviando TX', true);
+  }
+}
+
+async function minarPendientes() {
+  const miner = miDir || 'MINER_DEFAULT';
+  try {
+    const r = await fetch(`${URL_NODO()}/mine?miner=${miner}`);
+    const d = await r.json();
+    registrar('registroTx', `Bloque #${d.index} minado — hash: ${d.hash.slice(0,16)}...`, 'ok');
+    aviso(`⛏ Bloque #${d.index} minado`);
+    await actualizarSaldo();
+    await actualizarCadena();
+  } catch(e) {
+    registrar('registroTx', `Error: ${e}`, 'err');
+    aviso('Error minando', true);
+  }
+}
+
+let ultimaLongitud = 0;
+async function actualizarCadena() {
+  try {
+    const r = await fetch(`${URL_NODO()}/chain`);
+    const d = await r.json();
+    const lenEl = document.getElementById('longitudCadena');
+    lenEl.textContent = `${d.length} bloques`;
+    if (d.length > ultimaLongitud && ultimaLongitud !== 0) {
+      lenEl.classList.remove('pulse'); void lenEl.offsetWidth; lenEl.classList.add('pulse');
+      sonido(540, 0.09, 'square', 0.05);
+    }
+    const grew = d.length > ultimaLongitud;
+    ultimaLongitud = d.length;
+    const list = document.getElementById('listaBloques');
+    list.innerHTML = '';
+    const blocks = [...(d.chain || [])].reverse();
+    blocks.forEach((b, i) => {
+      const div = document.createElement('div');
+      div.className = 'block-item' + (grew && i === 0 ? ' new' : '');
+      const txCount = (b.txs || []).length;
+      const ts = new Date(b.ts * 1000).toLocaleTimeString();
+      div.innerHTML = `
+        <div class="block-idx">BLOQUE #${b.idx} · ${ts}</div>
+        <div class="block-hash">HASH: ${b.hash}</div>
+        <div class="block-hash" style="color:#c060ff">MERKLE: ${b.merkle_root || '—'}</div>
+        <div class="block-meta">NONCE: ${b.nonce} · PREV: ${b.prev_hash.slice(0,16)}...</div>
+        <div class="block-txs">${txCount} TRANSACCIÓN(ES)</div>
+      `;
+      list.appendChild(div);
+    });
+  } catch(e) {
+    document.getElementById('listaBloques').innerHTML =
+      `<div style="color:var(--red);font-size:0.8em;padding:12px;font-family:var(--font-hd);letter-spacing:1px">ERROR: No se pudo cargar la cadena</div>`;
+  }
+}
+
+async function registrarPeer() {
+  const peer = document.getElementById('urlPeer').value.trim();
+  if (!peer) return;
+  try {
+    const r = await fetch(`${URL_NODO()}/nodes/register`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({nodes: [peer]}),
+    });
+    registrar('registroRed', `Peer registrado: ${peer}`, 'ok');
+    aviso('Peer registrado');
+  } catch(e) {
+    registrar('registroRed', `Error: ${e}`, 'err');
+    aviso('Error registrando peer', true);
+  }
+}
+
+async function resolverConsenso() {
+  try {
+    const r = await fetch(`${URL_NODO()}/nodes/resolve`);
+    const d = await r.json();
+    registrar('registroRed', d.message + ` (${d.length} bloques)`, 'ok');
+    aviso('Consenso ejecutado');
+    await actualizarCadena();
+  } catch(e) {
+    registrar('registroRed', `Error: ${e}`, 'err');
+    aviso('Error en consenso', true);
+  }
+}
+
+async function consultarSaldo() {
+  const addr = document.getElementById('direccionConsulta').value.trim();
+  if (!addr) return;
+  try {
+    const r = await fetch(`${URL_NODO()}/balance/${addr}`);
+    const d = await r.json();
+    document.getElementById('resultadoConsulta').innerHTML =
+      `<div style="font-family:var(--font-hd);font-size:1.5em;color:var(--gold);text-shadow:var(--glow-y)">
+        ${d.balance} <small style="font-size:0.3em;color:var(--gold2);letter-spacing:3px;display:block">CRYPTOSTUDS</small>
+       </div>
+       <div style="font-size:0.65em;color:var(--dim);margin-top:6px;word-break:break-all;font-family:monospace">${addr}</div>`;
+    registrar('registroConsulta', `${addr.slice(0,12)}... → ${d.balance} CryptoStuds`, 'ok');
+  } catch(e) {
+    registrar('registroConsulta', `Error: ${e}`, 'err');
+    aviso('Error consultando saldo', true);
+  }
+}
+
+async function verificarCadena() {
+  try {
+    const r = await fetch(`${URL_NODO()}/chain/valid`);
+    const d = await r.json();
+    const el = document.getElementById('validezCadena');
+    el.style.display = 'block';
+    if (d.valid) {
+      el.innerHTML = `<span style="color:var(--green)">✓ CADENA ÍNTEGRA — ${d.length} BLOQUES VERIFICADOS</span>`;
+    } else {
+      el.innerHTML = `<span style="color:var(--red)">✗ CADENA COMPROMETIDA — REVISAR INTEGRIDAD</span>`;
+    }
+  } catch(e) {
+    registrar('registroWallet', `Error verificando cadena: ${e}`, 'err');
+  }
+}
+
+(function campoEstrellasAnim() {
+  const cv = document.getElementById('campoEstrellasAnim');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  let stars = [];
+  const COLORS = ['#ffe81f', '#1a7fff', '#ffffff', '#c060ff'];
+
+  function resize() {
+    cv.width = window.innerWidth;
+    cv.height = window.innerHeight;
+    const count = Math.min(160, Math.floor((cv.width * cv.height) / 9000));
+    stars = Array.from({ length: count }, () => ({
+      x: Math.random() * cv.width,
+      y: Math.random() * cv.height,
+      z: Math.random() * 1.4 + 0.2,
+      c: COLORS[Math.floor(Math.random() * COLORS.length)],
+      tw: Math.random() * Math.PI * 2,
+    }));
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function tick() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    for (const s of stars) {
+      s.y += s.z * 0.25;
+      s.tw += 0.04;
+      if (s.y > cv.height) { s.y = 0; s.x = Math.random() * cv.width; }
+      const r = s.z * 1.1;
+      const alpha = 0.35 + Math.abs(Math.sin(s.tw)) * 0.55;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = s.c;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(tick);
+  }
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce) tick();
+})();
+
+revisarNodo();
+setInterval(revisarNodo, 10000);
+setInterval(() => { if (miDir) actualizarSaldo(); }, 8000);
+</script>
+</body>
+</html>

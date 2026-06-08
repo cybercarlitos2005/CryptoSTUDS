@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: cryptostuds-nodo
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn api.node_app:app --bind 0.0.0.0:$PORT
+    autoDeploy: true
